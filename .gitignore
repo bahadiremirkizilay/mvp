@@ -1,0 +1,83 @@
+# ============================================================
+# Multimodal Psychophysiological Analysis System — .gitignore
+# ============================================================
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+.conda/
+*.venv
+
+# ── Python version managers ───────────────────────────────────
+.python-version
+
+# ── Jupyter / IPython ─────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Data files (large / sensitive / locally collected) ────────
+rppg_data.csv
+*.csv
+data/affectnet/**
+!data/affectnet/README.txt
+data/pure/**
+!data/pure/README.txt
+data/ubfc/**
+!data/ubfc/README.txt
+data/self_collected/**
+!data/self_collected/README.txt
+
+# ── Model weights / checkpoints ───────────────────────────────
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+# Keep MediaPipe task file (small, required for runtime)
+!models/face_landmarker.task
+
+# ── Logs & outputs ────────────────────────────────────────────
+logs/
+runs/
+outputs/
+*.log
+*.out
+tensorboard_logs/
+
+# ── OS / Editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Environment variables / secrets ───────────────────────────
+.env
+.env.*
+secrets.yaml
+secrets.json
+
+# ── Pytest / coverage ─────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml

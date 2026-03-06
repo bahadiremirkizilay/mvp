@@ -1,0 +1,32 @@
+# ============================================================
+# Multimodal Psychophysiological Analysis System
+# Configuration File
+# ============================================================
+
+camera:
+  device_id: 0        # OpenCV camera index (0 = default webcam)
+  fps: 30             # Target capture framerate
+  width: 640          # Frame width in pixels
+  height: 480         # Frame height in pixels
+
+rppg:
+  window_seconds: 10  # Sliding buffer length in seconds
+  bandpass_low: 0.8   # Lower cutoff frequency (Hz) → ~48 BPM
+  bandpass_high: 2.2  # Upper cutoff frequency (Hz) → ~132 BPM
+  bandpass_order: 4   # Butterworth filter order (higher = sharper roll-off)
+  min_frames: 64      # Minimum buffer fill before signal estimation begins
+  ma_window_sec: 0.3  # Moving average window applied to raw rPPG signal (seconds)
+
+mediapipe:
+  max_num_faces: 1
+  refine_landmarks: true
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+hrv:
+  min_peak_prominence: 0.2    # Relative to signal range; rejects spurious peaks
+  min_peak_distance_sec: 0.45  # Minimum inter-beat interval → max ~133 BPM
+
+visualization:
+  update_interval: 30   # Refresh plot every N frames (≈ every 1 s at 30 FPS)
+  figure_dpi: 100
