@@ -1,0 +1,12 @@
+# Local-only dataset paths (do not commit personal absolute paths)
+# Copy to config/datasets.local.yaml and edit based on your machine.
+
+datasets:
+  politifact_csv: "politifact_clean_binarized.csv"
+  real_life_deception_dir: "Real-life Deception Detection Dataset With Train Test"
+  bag_of_lies_dir: "D:/datasets/BagOfLies"  # external disk recommended
+
+storage:
+  use_external_paths: true
+  prefer_junction_links: true
+  min_free_space_gb_warning: 8

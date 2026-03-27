@@ -1,0 +1,34 @@
+# Test 2: Shorter window for faster tracking
+# ============================================================
+
+input:
+  use_video_file: false
+  video_path: "data/sample_video.mp4"
+
+camera:
+  device_id: 0
+  fps: 30
+  width: 640
+  height: 480
+
+rppg:
+  window_seconds: 5         # Shorter window (was 7)
+  bandpass_low: 0.67
+  bandpass_high: 4.0
+  bandpass_order: 4
+  min_frames: 32            # Proportional reduction
+  ma_window_sec: 0.3
+
+mediapipe:
+  max_num_faces: 1
+  refine_landmarks: true
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+hrv:
+  min_peak_prominence: 0.10
+  min_peak_distance_sec: 0.35
+
+visualization:
+  update_interval: 7
+  figure_dpi: 100

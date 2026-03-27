@@ -271,6 +271,94 @@ class ROIExtractor:
         self._reference_pts  = None
         self._prev_frame_pts = None
 
+    def process_from_cached_landmarks(
+        self, frame: np.ndarray, landmarks: np.ndarray
+    ) -> Tuple[Optional[dict], float, np.ndarray]:
+        """
+        Process frame using pre-extracted cached landmarks (for deterministic results).
+        
+        Parameters
+        ----------
+        frame : np.ndarray
+            BGR image from OpenCV, shape (H, W, 3)
+        landmarks : np.ndarray
+            Pre-extracted landmark coordinates, shape (468, 2)
+            
+        Returns
+        -------
+        roi_signals : dict or None
+            Same as process()
+        motion_confidence : float
+            Same as process()
+        debug_frame : np.ndarray
+            Same as process()
+        """
+        h, w = frame.shape[:2]
+        
+        # Check if landmarks are valid (non-zero)
+        if np.all(landmarks == 0):
+            return None, 1.0, frame.copy()
+        
+        lm_array = landmarks.astype(np.float32)
+        
+        # Compute motion confidence (same as process())
+        current_stable_pts = lm_array[STABLE_INDICES].astype(np.float32)
+        if self._prev_frame_pts is not None:
+            _disp = float(np.mean(
+                np.linalg.norm(current_stable_pts - self._prev_frame_pts, axis=1)
+            ))
+        else:
+            _disp = 0.0
+        self._prev_frame_pts = current_stable_pts.copy()
+        _motion_threshold_px = 15.0
+        motion_confidence = float(np.clip(1.0 - _disp / _motion_threshold_px, 0.0, 1.0))
+        
+        # Stabilize frame (same as process())
+        stabilized, M = self._stabilize(frame, lm_array, w, h)
+        stabilized_lm = self._transform_landmarks(lm_array, M)
+        
+        # Build per-ROI masks (same as process())
+        roi_masks = self._build_per_roi_masks(stabilized_lm, stabilized, h, w)
+        
+        # Combined mask for debug overlay
+        combined: Optional[np.ndarray] = None
+        for _m in roi_masks.values():
+            if _m is not None:
+                combined = _m if combined is None else cv2.bitwise_or(combined, _m)
+        
+        # Debug overlay
+        debug_frame = stabilized.copy()
+        if combined is not None and combined.sum() > 0:
+            overlay = debug_frame.copy()
+            overlay[combined > 0] = [0, 200, 0]
+            cv2.addWeighted(overlay, 0.35, debug_frame, 0.65, 0, debug_frame)
+            contours, _ = cv2.findContours(
+                combined, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
+            cv2.drawContours(debug_frame, contours, -1, (0, 255, 0), 1)
+        
+        # Motion-confidence dot
+        _dot_colour = (
+            int(255 * (1.0 - motion_confidence)),
+            int(255 * motion_confidence),
+            0,
+        )
+        cv2.circle(debug_frame, (w - 20, 20), 8, _dot_colour, -1)
+        
+        # Extract per-ROI mean RGB (same as process())
+        rgb_stable = cv2.cvtColor(stabilized, cv2.COLOR_BGR2RGB)
+        roi_signals: dict = {}
+        for name, mask in roi_masks.items():
+            if mask is not None and int(mask.sum()) >= 50:
+                roi_signals[name] = self._masked_mean(rgb_stable, mask)
+            else:
+                roi_signals[name] = None
+        
+        if all(v is None for v in roi_signals.values()):
+            return None, motion_confidence, debug_frame
+        
+        return roi_signals, motion_confidence, debug_frame
+
     def release(self) -> None:
         """Release FaceLandmarker resources."""
         self.face_landmarker.close()

@@ -52,6 +52,22 @@ data/self_collected/**
 # Keep MediaPipe task file (small, required for runtime)
 !models/face_landmarker.task
 
+# ── Checkpoints (large training artifacts) ────────────────────
+checkpoints/
+
+# ── Dataset files (large, not for VCS) ───────────────────────
+data/CASMEII/**
+!data/CASMEII/README.txt
+data/MU3D-Package/**
+!data/MU3D-Package/README.txt
+data/SAMM/**
+!data/SAMM/README.txt
+data/boxoflies/**
+!data/boxoflies/README.txt
+data/RealLifeDeceptionDetection.2016/**
+!data/RealLifeDeceptionDetection.2016/README.txt
+data/Real-life Deception Detection Dataset With Train Test/**
+
 # ── Logs & outputs ────────────────────────────────────────────
 logs/
 runs/
@@ -75,6 +91,7 @@ desktop.ini
 .env.*
 secrets.yaml
 secrets.json
+config/datasets.local.yaml
 
 # ── Pytest / coverage ─────────────────────────────────────────
 .pytest_cache/

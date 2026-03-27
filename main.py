@@ -237,7 +237,7 @@ def _run_roi_pipeline(
     # 1. Remove linear trend per channel
     rgb_detrended = detrend_signal(rgb_buffer)
 
-    # 2. Rolling normalisation — suppresses illumination drift before POS
+    # 2. Rolling normalisation — suppresses illumination drift
     tn_window = max(3, int(0.5 * fs_actual))
     rgb_norm  = temporal_normalize_rgb(rgb_detrended, tn_window)
 
@@ -272,10 +272,14 @@ def _run_roi_pipeline(
 def main() -> None:
     # ── Load configuration ─────────────────────────────────────────────────
     config = load_config(_CONFIG_PATH)
+    input_cfg = config.get("input", {})
     cam_cfg  = config["camera"]
     rppg_cfg = config["rppg"]
     hrv_cfg  = config.get("hrv", {})
     vis_cfg  = config.get("visualization", {})
+
+    use_video_file = input_cfg.get("use_video_file", False)
+    video_path = input_cfg.get("video_path", "")
 
     fs              = float(cam_cfg["fps"])
     window_samples  = int(rppg_cfg["window_seconds"] * fs)
@@ -306,19 +310,45 @@ def main() -> None:
     csv_fh, csv_writer = _open_csv_log(_CSV_PATH)
     print(f"[INFO] CSV log → {_CSV_PATH}")
 
-    cap = cv2.VideoCapture(cam_cfg["device_id"])
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH,  cam_cfg["width"])
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_cfg["height"])
-    cap.set(cv2.CAP_PROP_FPS,          cam_cfg["fps"])
-
-    if not cap.isOpened():
-        print("[ERROR] Cannot open camera. "
-              "Check 'device_id' in config/config.yaml.")
-        visualizer.close()
-        sys.exit(1)
-
-    actual_fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"[INFO] Camera opened  —  reported FPS: {actual_fps:.1f}")
+    # ── Video capture initialization (camera or file) ─────────────────────
+    if use_video_file:
+        if not video_path:
+            print("[ERROR] use_video_file=true but video_path is not set in config/config.yaml")
+            visualizer.close()
+            sys.exit(1)
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            print(f"[ERROR] Cannot open video file: {video_path}")
+            visualizer.close()
+            sys.exit(1)
+        # Read actual FPS from video file
+        actual_fps = cap.get(cv2.CAP_PROP_FPS)
+        if actual_fps <= 0:
+            print(f"[WARN] Video file FPS not detected, using config value: {fs:.1f}")
+            actual_fps = fs
+        else:
+            # Update fs to match video file FPS
+            fs = actual_fps
+            window_samples = int(rppg_cfg["window_seconds"] * fs)
+        
+        total_frames_in_video = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        print(f"[INFO] Video file opened: {video_path}")
+        print(f"[INFO] Video FPS: {actual_fps:.1f}, Total frames: {total_frames_in_video}")
+    else:
+        cap = cv2.VideoCapture(cam_cfg["device_id"])
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH,  cam_cfg["width"])
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_cfg["height"])
+        cap.set(cv2.CAP_PROP_FPS,          cam_cfg["fps"])
+        
+        if not cap.isOpened():
+            print("[ERROR] Cannot open camera. "
+                  "Check 'device_id' in config/config.yaml.")
+            visualizer.close()
+            sys.exit(1)
+        
+        actual_fps = cap.get(cv2.CAP_PROP_FPS)
+        print(f"[INFO] Camera opened  —  reported FPS: {actual_fps:.1f}")
+    
     print(f"[INFO] Buffering {rppg_cfg['window_seconds']} s "
           f"({window_samples} frames) before first HR estimate.")
     print("[INFO] Press  q  or  Esc  in the preview window to quit.\n")
@@ -363,8 +393,12 @@ def main() -> None:
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("[WARN] Frame capture failed — retrying…")
-            continue
+            if use_video_file:
+                print("[INFO] End of video file reached.")
+                break
+            else:
+                print("[WARN] Frame capture failed — retrying…")
+                continue
 
         total_frames += 1
         fps_counter  += 1

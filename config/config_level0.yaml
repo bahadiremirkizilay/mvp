@@ -1,0 +1,34 @@
+# Level 0: NO FILTERING - Raw algorithm test
+# ============================================================
+
+input:
+  use_video_file: false
+  video_path: "data/sample_video.mp4"
+
+camera:
+  device_id: 0
+  fps: 30
+  width: 640
+  height: 480
+
+rppg:
+  window_seconds: 7
+  bandpass_low: 0.67  # 40 BPM
+  bandpass_high: 4.0  # 240 BPM
+  bandpass_order: 4
+  min_frames: 64
+  ma_window_sec: 0.3
+
+mediapipe:
+  max_num_faces: 1
+  refine_landmarks: true
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+hrv:
+  min_peak_prominence: 0.10
+  min_peak_distance_sec: 0.35
+
+visualization:
+  update_interval: 7
+  figure_dpi: 100

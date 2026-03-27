@@ -1,0 +1,13 @@
+VALIDATION METRICS — UBFC-RPPG Dataset
+============================================================
+Video: vid.avi
+Ground Truth: ground_truth.txt
+
+MAE (BPM): 6.261
+RMSE (BPM): 7.555
+Pearson Correlation: 0.3939
+p-value: 0.000000
+
+Samples: 215
+Mean Predicted BPM: 101.70
+Mean Ground Truth BPM: 107.00

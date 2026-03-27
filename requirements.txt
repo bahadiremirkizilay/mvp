@@ -11,15 +11,15 @@ scipy>=1.11.0                 # Butter filter, filtfilt, find_peaks
 matplotlib>=3.7.0             # Real-time plotting (interactive mode)
 PyYAML>=6.0                   # config.yaml loading
 
-# ── Phase 2+ (emotion recognition, fusion) ────────────────────
-# Uncomment when beginning Phase 2.
-# torch>=2.1.0
-# torchvision>=0.16.0
-# albumentations>=1.3.1       # Data augmentation pipeline
-# timm>=0.9.0                  # Pre-trained backbone zoo (EfficientNet etc.)
+# ── Phase 2 (emotion recognition + fusion) ────────────────────
+torch>=2.1.0                  # Deep learning framework
+torchvision>=0.16.0           # Pre-trained vision models (ResNet, EfficientNet)
+pandas>=2.0.0                 # DataFrame for annotations and results
+openpyxl>=3.1.0               # Excel file reading (SAMM annotations)
+scikit-learn>=1.3.0           # Metrics (F1, accuracy, confusion matrix)
+tqdm>=4.65.0                  # Progress bars for training
 
-# ── Dev / evaluation utilities ────────────────────────────────
-# Uncomment as needed.
-# pandas>=2.0.0
-# scikit-learn>=1.3.0
-# tensorboard>=2.14.0
+# ── Optional (advanced features) ──────────────────────────────
+# albumentations>=1.3.1       # Advanced data augmentation
+# tensorboard>=2.14.0         # Training visualization
+# timm>=0.9.0                  # Additional pre-trained models

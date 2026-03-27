@@ -3,18 +3,23 @@
 # Configuration File
 # ============================================================
 
+input:
+  # Set use_video_file to true for video file input, false for webcam
+  use_video_file: false
+  video_path: "data/sample_video.mp4"  # Path to video file (used when use_video_file=true)
+
 camera:
   device_id: 0        # OpenCV camera index (0 = default webcam)
-  fps: 30             # Target capture framerate
+  fps: 30             # Target capture framerate (ignored when using video file)
   width: 640          # Frame width in pixels
   height: 480         # Frame height in pixels
 
 rppg:
-  window_seconds: 10  # Sliding buffer length in seconds
+  window_seconds: 7   # Shorter window for faster BPM tracking
   bandpass_low: 0.8   # Lower cutoff frequency (Hz) → ~48 BPM
   bandpass_high: 2.2  # Upper cutoff frequency (Hz) → ~132 BPM
-  bandpass_order: 4   # Butterworth filter order (higher = sharper roll-off)
-  min_frames: 64      # Minimum buffer fill before signal estimation begins
+  bandpass_order: 4   # Butterworth filter order
+  min_frames: 42      # Reduced proportionally (7s * 30fps / 5)
   ma_window_sec: 0.3  # Moving average window applied to raw rPPG signal (seconds)
 
 mediapipe:
@@ -24,9 +29,9 @@ mediapipe:
   min_tracking_confidence: 0.5
 
 hrv:
-  min_peak_prominence: 0.2    # Relative to signal range; rejects spurious peaks
-  min_peak_distance_sec: 0.45  # Minimum inter-beat interval → max ~133 BPM
+  min_peak_prominence: 0.10    # Minimum prominence for peak detection
+  min_peak_distance_sec: 0.35  # Minimum distance between peaks (seconds)
 
 visualization:
-  update_interval: 30   # Refresh plot every N frames (≈ every 1 s at 30 FPS)
+  update_interval: 7    # Process every ~0.24s (faster trend tracking)
   figure_dpi: 100
